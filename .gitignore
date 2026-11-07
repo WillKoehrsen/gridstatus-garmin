@@ -1,0 +1,5 @@
+bin/
+resources-local/
+*.der
+*.pem
+.env

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
+    <iq:application id="eb7f66df14b24636b9e6913e1c78a77b" type="watch-app" name="@Strings.AppName" entry="GridStatusApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.2.0">
+        <iq:products>
+            <iq:product id="fr255"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="Communications"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>
