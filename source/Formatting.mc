@@ -3,6 +3,7 @@ import Toybox.Lang;
 import Toybox.Time;
 import Toybox.Time.Gregorian;
 
+(:glance)
 module Formatting {
     const NO_VALUE = "--";
     const FRESH_SECONDS = 300;
@@ -21,6 +22,22 @@ module Formatting {
         var price = pricePerMegawattHour.toFloat();
         var sign = price < 0 ? "-" : "";
         return sign + "$" + price.abs().format("%.2f") + "/MWh";
+    }
+
+    function formatLoadNumber(megawatts as Numeric?) as String {
+        if (megawatts == null) {
+            return NO_VALUE;
+        }
+        return (megawatts.toFloat() / 1000.0).format("%.1f");
+    }
+
+    function formatWholePrice(pricePerMegawattHour as Numeric?) as String {
+        if (pricePerMegawattHour == null) {
+            return NO_VALUE;
+        }
+        var price = pricePerMegawattHour.toFloat();
+        var sign = price < 0 ? "-" : "";
+        return sign + "$" + price.abs().format("%.0f");
     }
 
     // Source values differ by ISO (natural_gas, gas, dual_fuel), so they are shown as sent.

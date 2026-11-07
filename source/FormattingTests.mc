@@ -61,6 +61,69 @@ function formatsFuels(logger as Logger) as Boolean {
 }
 
 (:test)
+function formatsOverviewValues(logger as Logger) as Boolean {
+    Test.assertEqual(Formatting.formatLoadNumber(91520.0), "91.5");
+    Test.assertEqual(Formatting.formatLoadNumber(null), "--");
+    Test.assertEqual(Formatting.formatWholePrice(278.23), "$278");
+    Test.assertEqual(Formatting.formatWholePrice(-3.7), "-$4");
+    Test.assertEqual(Formatting.formatWholePrice(null), "--");
+    return true;
+}
+
+// Values from caiso_fuel_mix on 2026-11-07, including a negative solar value.
+(:test)
+function summarizesFuelMixIgnoringNegativeValues(logger as Logger) as Boolean {
+    var displayRows = FuelMix.summarize({
+        "interval_start_utc" => "2026-11-07T01:50:00+00:00",
+        "interval_end_utc" => "2026-11-07T01:55:00+00:00",
+        "solar" => -73,
+        "wind" => 970,
+        "geothermal" => 794,
+        "biomass" => 163,
+        "biogas" => 155,
+        "small_hydro" => 124,
+        "coal" => 4,
+        "nuclear" => 1099,
+        "natural_gas" => 11467,
+        "large_hydro" => 1886,
+        "batteries" => 6409,
+        "imports" => 3838,
+        "other" => 0
+    });
+    Test.assertEqual(displayRows.size(), 5);
+    Test.assertEqual(displayRows[0][:label], "Natural Gas");
+    Test.assertEqual(FuelMix.formatShare(displayRows[0][:share] as Float), "43%");
+    Test.assertEqual(displayRows[1][:label], "Batteries");
+    Test.assertEqual(displayRows[2][:label], "Imports");
+    Test.assertEqual(displayRows[3][:label], "Large Hydro");
+    Test.assertEqual(displayRows[4][:label], "Others");
+    Test.assertEqual(FuelMix.formatShare(displayRows[4][:share] as Float), "12%");
+    return true;
+}
+
+// Values from isone_fuel_mix on 2026-11-07, including a null coal value.
+(:test)
+function summarizesFuelMixIgnoringNulls(logger as Logger) as Boolean {
+    var displayRows = FuelMix.summarize({
+        "coal" => null,
+        "natural_gas" => 7352.0,
+        "nuclear" => 2109.0,
+        "wind" => 1215.0
+    });
+    Test.assertEqual(displayRows.size(), 3);
+    Test.assertEqual(displayRows[2][:label], "Wind");
+    Test.assertEqual(FuelMix.formatShare(displayRows[2][:share] as Float), "11%");
+    return true;
+}
+
+(:test)
+function shortensLongFuelLabels(logger as Logger) as Boolean {
+    Test.assertEqual(FuelMix.shorten("Waste Disposal Services"), "Waste Disposal Ser");
+    Test.assertEqual(FuelMix.shorten("Wind"), "Wind");
+    return true;
+}
+
+(:test)
 function decidesFreshness(logger as Logger) as Boolean {
     Test.assert(Formatting.isFresh(1000, 1299));
     Test.assert(!Formatting.isFresh(1000, 1300));

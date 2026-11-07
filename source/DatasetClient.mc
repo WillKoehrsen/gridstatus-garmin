@@ -4,20 +4,23 @@ import Toybox.Lang;
 import Toybox.Time;
 import Toybox.WatchUi;
 
-class ConditionsClient {
-    private const CONDITIONS_URL = "https://api.gridstatus.io/v1/datasets/isos_latest/query";
+// Fetches one Grid Status dataset and keeps the last response on the watch.
+class DatasetClient {
+    private const API_URL = "https://api.gridstatus.io/v1/datasets/";
     private const API_KEY_PROPERTY = "apiKey";
-    private const ROWS_STORAGE_KEY = "conditionsRows";
-    private const FETCHED_AT_STORAGE_KEY = "conditionsFetchedAt";
 
-    private var _rows as Array<Dictionary>? = null;
-    private var _fetchedAtSeconds as Number? = null;
+    private var _datasetId as String;
+    private var _parameters as Dictionary<Object, Object>?;
+    private var _rows as Array<Dictionary>?;
+    private var _fetchedAtSeconds as Number?;
     private var _failureMessage as String? = null;
     private var _isFetching as Boolean = false;
 
-    function initialize() {
-        _rows = Application.Storage.getValue(ROWS_STORAGE_KEY) as Array<Dictionary>?;
-        _fetchedAtSeconds = Application.Storage.getValue(FETCHED_AT_STORAGE_KEY) as Number?;
+    function initialize(datasetId as String, parameters as Dictionary<Object, Object>?) {
+        _datasetId = datasetId;
+        _parameters = parameters;
+        _rows = Application.Storage.getValue(AppData.rowsKey(datasetId)) as Array<Dictionary>?;
+        _fetchedAtSeconds = Application.Storage.getValue(AppData.fetchedAtKey(datasetId)) as Number?;
     }
 
     function getRows() as Array<Dictionary>? {
@@ -60,8 +63,8 @@ class ConditionsClient {
 
         // The key goes in a header so it stays out of URLs, which servers and proxies often log.
         Communications.makeWebRequest(
-            CONDITIONS_URL,
-            null,
+            API_URL + _datasetId + "/query",
+            _parameters,
             {
                 :method => Communications.HTTP_REQUEST_METHOD_GET,
                 :headers => {"x-api-key" => getApiKey()},
@@ -91,8 +94,8 @@ class ConditionsClient {
 
     private function saveToStorage() as Void {
         try {
-            Application.Storage.setValue(ROWS_STORAGE_KEY, _rows as Application.Storage.ValueType);
-            Application.Storage.setValue(FETCHED_AT_STORAGE_KEY, _fetchedAtSeconds as Number);
+            Application.Storage.setValue(AppData.rowsKey(_datasetId), _rows as Application.Storage.ValueType);
+            Application.Storage.setValue(AppData.fetchedAtKey(_datasetId), _fetchedAtSeconds as Number);
         } catch (exception instanceof Lang.StorageFullException) {
             // The data on screen is still good; the next open just fetches again.
         }

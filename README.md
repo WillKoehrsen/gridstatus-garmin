@@ -1,18 +1,29 @@
 # Grid Status for Garmin
 
-A Connect IQ watch app for the Forerunner 255 Music (`fr255m`). It shows the current load, net load, hub price and primary fuel for each ISO, using `isos_latest` from the Grid Status API.
+A Connect IQ watch app for the Forerunner 255 Music (`fr255m`) that shows current grid conditions from the Grid Status API.
 
 Each person uses their own API key, which they paste into the app's settings in Garmin Connect.
 
+## Screens
+
+- **Overview:** load and hub price for every ISO on one screen.
+- **ISO:** load, net load, hub price and primary fuel, with the age of each value. The bottom line shows when the app last fetched data.
+- **Fuel mix:** the largest sources for one ISO, from `{iso}_fuel_mix`. Shares count only positive values, so storage that is charging is left out.
+- **Glance:** the last ISO you viewed, in the watch's glance list. Add it from the watch's glance settings. It shows saved data and never sends a request.
+
+The app reopens on the page you last viewed.
+
 ## Controls
 
-- **UP / DOWN:** previous or next ISO
-- **START:** refresh
-- **BACK:** exit
+| Screen | UP / DOWN | START | BACK |
+|---|---|---|---|
+| Overview | Next or previous page | Refresh | Exit |
+| ISO | Next or previous page | Open fuel mix | Exit |
+| Fuel mix | Nothing | Refresh | Back to the ISO |
 
-The time beside each value is the age of that value, and the bottom line shows when the app last fetched data.
+## API quota
 
-Each fetch counts against the user's API quota, so the app reuses the last response for 5 minutes. Opening the app or pressing START in that window doesn't send a request. Changing the API key always fetches.
+The overview, ISO pages and glance share one request. Each ISO's fuel mix is one more. The app reuses each response for 5 minutes, so opening a screen or pressing START in that window doesn't send a request. Changing the API key always fetches.
 
 ## Setup
 
