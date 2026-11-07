@@ -71,7 +71,7 @@ Connect the watch by USB and set **Settings > System > USB Mode** to **MTP**. Qu
 ```bash
 brew install libmtp
 mtp-folders 2>/dev/null | grep Apps
-mtp-sendfile bin/GridStatusSideload.prg <Apps folder ID>/GridStatus.prg
+mtp-sendfile bin/GridStatusSideload.prg <Apps folder ID>/GridStatusSideload.prg
 ```
 
-Unplug the watch to finish the install. The watch fetches data through the Garmin Connect app, so your phone must be connected.
+Unplug the watch to finish the install. Sending a new build updates the installed app, which no longer appears in the folder afterwards, so there is nothing to delete first. The watch fetches data through the Garmin Connect app, so your phone must be connected.
