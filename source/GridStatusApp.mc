@@ -11,6 +11,10 @@ class GridStatusApp extends Application.AppBase {
     }
 
     function onStart(state as Dictionary?) as Void {
+        _client.refreshIfStale();
+    }
+
+    function onSettingsChanged() as Void {
         _client.fetch();
     }
 

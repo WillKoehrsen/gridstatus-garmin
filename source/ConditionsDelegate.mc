@@ -22,7 +22,7 @@ class ConditionsDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onSelect() as Boolean {
-        _client.fetch();
+        _client.refreshIfStale();
         return true;
     }
 }

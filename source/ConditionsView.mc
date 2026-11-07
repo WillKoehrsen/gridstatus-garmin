@@ -34,7 +34,9 @@ class ConditionsView extends WatchUi.View {
         dc.clear();
 
         var rows = _client.getRows();
-        if (rows == null) {
+        if (!_client.hasApiKey()) {
+            drawLine(dc, 50, Graphics.FONT_SMALL, "Add your API key\nin Garmin Connect");
+        } else if (rows == null) {
             drawMessage(dc);
         } else {
             drawPage(dc, rows);
@@ -79,7 +81,12 @@ class ConditionsView extends WatchUi.View {
         if (failureMessage != null) {
             return failureMessage;
         }
-        return (_pageIndex + 1) + "/" + pageCount;
+        var page = (_pageIndex + 1) + "/" + pageCount;
+        var secondsSinceFetch = _client.getSecondsSinceFetch();
+        if (secondsSinceFetch == null) {
+            return page;
+        }
+        return page + "  Updated " + Formatting.formatElapsedSeconds(secondsSinceFetch);
     }
 
     private function drawLine(dc as Dc, heightPercent as Number, font as FontDefinition, text as String) as Void {

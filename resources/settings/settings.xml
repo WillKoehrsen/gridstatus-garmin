@@ -1,0 +1,5 @@
+<settings>
+    <setting propertyKey="@Properties.apiKey" title="@Strings.ApiKeyTitle" prompt="@Strings.ApiKeyPrompt">
+        <settingConfig type="password" required="true"/>
+    </setting>
+</settings>

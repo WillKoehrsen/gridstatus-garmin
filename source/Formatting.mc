@@ -5,6 +5,7 @@ import Toybox.Time.Gregorian;
 
 module Formatting {
     const NO_VALUE = "--";
+    const FRESH_SECONDS = 300;
 
     function formatGigawatts(megawatts as Numeric?) as String {
         if (megawatts == null) {
@@ -76,7 +77,10 @@ module Formatting {
         if (moment == null) {
             return NO_VALUE;
         }
-        var seconds = now.value() - moment.value();
+        return formatElapsedSeconds(now.value() - moment.value());
+    }
+
+    function formatElapsedSeconds(seconds as Number) as String {
         if (seconds < 60) {
             return "now";
         }
@@ -93,6 +97,33 @@ module Formatting {
 
     function withAge(value as String, timestamp as String?, now as Moment) as String {
         return value + "  " + formatAge(timestamp, now);
+    }
+
+    // A clock that moved backwards counts as stale, so the app can't get stuck on old data.
+    function isFresh(fetchedAtSeconds as Number?, nowSeconds as Number) as Boolean {
+        if (fetchedAtSeconds == null) {
+            return false;
+        }
+        var elapsedSeconds = nowSeconds - fetchedAtSeconds;
+        return elapsedSeconds >= 0 && elapsedSeconds < FRESH_SECONDS;
+    }
+
+    // A pasted key can carry stray whitespace, and the masked setting field hides it.
+    function trim(text as String) as String {
+        var characters = text.toCharArray();
+        var start = 0;
+        var end = characters.size();
+        while (start < end && isWhitespace(characters[start])) {
+            start += 1;
+        }
+        while (end > start && isWhitespace(characters[end - 1])) {
+            end -= 1;
+        }
+        return text.substring(start, end) as String;
+    }
+
+    function isWhitespace(character as Char) as Boolean {
+        return character == ' ' || character == '\t' || character == '\n' || character == '\r';
     }
 
     function describeFailure(responseCode as Number) as String {

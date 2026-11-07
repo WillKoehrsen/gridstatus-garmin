@@ -61,6 +61,25 @@ function formatsFuels(logger as Logger) as Boolean {
 }
 
 (:test)
+function decidesFreshness(logger as Logger) as Boolean {
+    Test.assert(Formatting.isFresh(1000, 1299));
+    Test.assert(!Formatting.isFresh(1000, 1300));
+    Test.assert(!Formatting.isFresh(1000, 999));
+    Test.assert(!Formatting.isFresh(null, 1000));
+    return true;
+}
+
+(:test)
+function trimsWhitespace(logger as Logger) as Boolean {
+    Test.assertEqual(Formatting.trim("abc123"), "abc123");
+    Test.assertEqual(Formatting.trim(" abc123\n"), "abc123");
+    Test.assertEqual(Formatting.trim("\t abc 123 \r\n"), "abc 123");
+    Test.assertEqual(Formatting.trim("   "), "");
+    Test.assertEqual(Formatting.trim(""), "");
+    return true;
+}
+
+(:test)
 function describesFailures(logger as Logger) as Boolean {
     Test.assertEqual(Formatting.describeFailure(Communications.BLE_CONNECTION_UNAVAILABLE), "Phone not connected");
     Test.assertEqual(Formatting.describeFailure(400), "API key rejected");

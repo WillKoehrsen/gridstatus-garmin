@@ -1,3 +1,5 @@
 <strings>
     <string id="AppName">Grid Status</string>
+    <string id="ApiKeyTitle">Grid Status API key</string>
+    <string id="ApiKeyPrompt">Paste the API key from your Grid Status account</string>
 </strings>

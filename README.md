@@ -1,8 +1,8 @@
 # Grid Status for Garmin
 
-A personal Connect IQ watch app for the Forerunner 255 Music (`fr255m`). It shows the current load, net load, hub price and primary fuel for each ISO, using `isos_latest` from the Grid Status API.
+A Connect IQ watch app for the Forerunner 255 Music (`fr255m`). It shows the current load, net load, hub price and primary fuel for each ISO, using `isos_latest` from the Grid Status API.
 
-**Don't share `bin/GridStatus.prg`.** The build compiles your API key into it, and API keys have no scopes.
+Each person uses their own API key, which they paste into the app's settings in Garmin Connect.
 
 ## Controls
 
@@ -10,7 +10,9 @@ A personal Connect IQ watch app for the Forerunner 255 Music (`fr255m`). It show
 - **START:** refresh
 - **BACK:** exit
 
-Data refreshes when the app opens and when you press START, and each request counts against your API quota. The time beside each value is the age of that value.
+The time beside each value is the age of that value, and the bottom line shows when the app last fetched data.
+
+Each fetch counts against the user's API quota, so the app reuses the last response for 5 minutes. Opening the app or pressing START in that window doesn't send a request. Changing the API key always fetches.
 
 ## Setup
 
@@ -36,11 +38,12 @@ openssl pkcs8 -topk8 -inform PEM -outform DER -in ~/.connectiq/developer_key.pem
 
 ## Build
 
-```bash
-scripts/build.sh
-```
+| Command | Output | API key |
+|---|---|---|
+| `scripts/build.sh` | `bin/GridStatus.prg` | None; read from the app setting |
+| `scripts/build_sideload.sh` | `bin/GridStatusSideload.prg` | Compiled in |
 
-The API key comes from `GRIDSTATUS_API_KEY`, falling back to the gitignored `.env` in the repository root. It is written to the gitignored `resources-local/api_key.xml`.
+Settings can't be edited on a sideloaded app, so use the sideload build on your own watch. **Never share or publish that build, or the `bin/GridStatusSideload-settings.json` written beside it.** The key comes from `GRIDSTATUS_API_KEY`, falling back to the gitignored `.env` in the repository root, and is also written to the gitignored `resources-local/properties.xml`.
 
 To target another device, add it to `manifest.xml` and set `GRIDSTATUS_DEVICE`.
 
@@ -56,17 +59,19 @@ scripts/test.sh
 To run the app in the simulator:
 
 ```bash
-monkeydo bin/GridStatus.prg fr255m
+monkeydo bin/GridStatusSideload.prg fr255m
 ```
 
-## Install on the watch
+The simulator keeps settings between builds, so after running a keyless build the sideload build also shows "Add your API key". Clear it with **File > Reset All App Data**. To try a key in the keyless build, use **File > Edit Persistent Storage > Edit Application.Properties data**.
+
+## Install on your own watch
 
 Connect the watch by USB and set **Settings > System > USB Mode** to **MTP**. Quit Garmin Express and OpenMTP if they're running. Then find the ID of the `GARMIN/Apps` folder and send the app using that ID, because `mtp-sendfile` can't resolve the folder by path:
 
 ```bash
 brew install libmtp
 mtp-folders 2>/dev/null | grep Apps
-mtp-sendfile bin/GridStatus.prg <Apps folder ID>/GridStatus.prg
+mtp-sendfile bin/GridStatusSideload.prg <Apps folder ID>/GridStatus.prg
 ```
 
 Unplug the watch to finish the install. The watch fetches data through the Garmin Connect app, so your phone must be connected.
