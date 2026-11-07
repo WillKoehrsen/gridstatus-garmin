@@ -1,6 +1,6 @@
 # Grid Status for Garmin
 
-A personal Connect IQ watch app for the Forerunner 255. It shows the current load, net load, hub price and primary fuel for each ISO, using `isos_latest` from the Grid Status API.
+A personal Connect IQ watch app for the Forerunner 255 Music (`fr255m`). It shows the current load, net load, hub price and primary fuel for each ISO, using `isos_latest` from the Grid Status API.
 
 **Don't share `bin/GridStatus.prg`.** The build compiles your API key into it, and API keys have no scopes.
 
@@ -18,7 +18,7 @@ Data refreshes when the app opens and when you press START, and each request cou
 brew install --cask connectiq connectiq-sdk-manager
 ```
 
-Open the SDK Manager, sign in, and download the Forerunner 255 device files.
+Open the SDK Manager, sign in, and download the Forerunner 255 Music device files.
 
 The cask moves `ConnectIQ.app` to `/Applications`, but the simulator reads `version.txt` from the app's folder. Without this link it shows `can't open file '/Applications/version.txt'` and stalls until the dialog is dismissed. Run this again after upgrading the SDK:
 
@@ -56,11 +56,17 @@ scripts/test.sh
 To run the app in the simulator:
 
 ```bash
-monkeydo bin/GridStatus.prg fr255
+monkeydo bin/GridStatus.prg fr255m
 ```
 
 ## Install on the watch
 
-Connect the watch by USB and copy `bin/GridStatus.prg` to `GARMIN/APPS`. On a Mac this needs an MTP app such as OpenMTP, and you may need to quit Garmin Express first.
+Connect the watch by USB and set **Settings > System > USB Mode** to **MTP**. Quit Garmin Express and OpenMTP if they're running. Then find the ID of the `GARMIN/Apps` folder and send the app using that ID, because `mtp-sendfile` can't resolve the folder by path:
 
-The watch fetches data through the Garmin Connect app, so your phone must be connected.
+```bash
+brew install libmtp
+mtp-folders 2>/dev/null | grep Apps
+mtp-sendfile bin/GridStatus.prg <Apps folder ID>/GridStatus.prg
+```
+
+Unplug the watch to finish the install. The watch fetches data through the Garmin Connect app, so your phone must be connected.

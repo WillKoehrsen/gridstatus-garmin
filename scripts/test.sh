@@ -5,7 +5,7 @@ set -euo pipefail
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repository_root"
 
-device="${GRIDSTATUS_DEVICE:-fr255}"
+device="${GRIDSTATUS_DEVICE:-fr255m}"
 scripts/build.sh bin/GridStatusTests.prg --unit-test
 
 # monkeydo exited 1 on a run where every test passed, so the output decides the result.

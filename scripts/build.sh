@@ -7,7 +7,7 @@ cd "$repository_root"
 
 output_path="${1:-bin/GridStatus.prg}"
 shift $(($# > 0 ? 1 : 0))
-device="${GRIDSTATUS_DEVICE:-fr255}"
+device="${GRIDSTATUS_DEVICE:-fr255m}"
 developer_key="${CONNECTIQ_DEVELOPER_KEY:-$HOME/.connectiq/developer_key.der}"
 fallback_environment_file="$repository_root/.env"
 
