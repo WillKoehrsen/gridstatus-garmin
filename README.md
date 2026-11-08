@@ -1,8 +1,16 @@
 # Grid Status for Garmin
 
-A Connect IQ watch app for the Forerunner 255 Music (`fr255m`) that shows current grid conditions from the Grid Status API.
+[![Test](https://github.com/WillKoehrsen/gridstatus-garmin/actions/workflows/test.yml/badge.svg)](https://github.com/WillKoehrsen/gridstatus-garmin/actions/workflows/test.yml)
 
-Each person uses their own API key, which they paste into the app's settings in Garmin Connect.
+A Connect IQ watch app for the Forerunner 255 Music (`fr255m`) that shows current grid conditions for CAISO, ERCOT, IESO, ISO-NE, MISO, NYISO, PJM and SPP from the [Grid Status API](https://www.gridstatus.io/api).
+
+<p>
+  <img src="docs/screenshots/overview.png" alt="Overview of every ISO" width="260">
+  <img src="docs/screenshots/iso.png" alt="ERCOT conditions" width="260">
+  <img src="docs/screenshots/fuel_mix.png" alt="ERCOT fuel mix" width="260">
+</p>
+
+Each person uses their own API key, which they paste into the app's settings in Garmin Connect. Create a key on your [Grid Status API settings page](https://www.gridstatus.io/settings/api). The watch fetches data through the Garmin Connect app, so your phone must be connected.
 
 ## Screens
 
@@ -60,7 +68,9 @@ To target another device, add it to `manifest.xml` and set `GRIDSTATUS_DEVICE`.
 
 ## Test
 
-Open the simulator, then run the unit tests:
+GitHub Actions builds the app and runs the unit tests on every push to `main` and every pull request, using a container with the Connect IQ SDK and a headless simulator.
+
+To run the unit tests locally, open the simulator first:
 
 ```bash
 open -a /Applications/ConnectIQ.app
@@ -86,3 +96,7 @@ mtp-sendfile bin/GridStatusSideload.prg <Apps folder ID>/GridStatusSideload.prg
 ```
 
 Unplug the watch to finish the install. Sending a new build updates the installed app, which no longer appears in the folder afterwards, so there is nothing to delete first. The watch fetches data through the Garmin Connect app, so your phone must be connected.
+
+## License
+
+The code is released under the [MIT License](LICENSE). The Grid Status name and logo belong to Grid Status and aren't covered by the license.
