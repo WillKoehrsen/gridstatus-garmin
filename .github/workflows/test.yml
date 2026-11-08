@@ -1,0 +1,34 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Bundles the Connect IQ SDK, device files and a headless simulator.
+    container: ghcr.io/matco/connectiq-tester:v2.10.0
+    env:
+      CONNECTIQ_DEVELOPER_KEY: /tmp/developer_key.der
+      DISPLAY: ":1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create a temporary developer key
+        run: |
+          openssl genrsa -out /tmp/developer_key.pem 4096
+          openssl pkcs8 -topk8 -inform PEM -outform DER -in /tmp/developer_key.pem -out /tmp/developer_key.der -nocrypt
+
+      # The container's device files live under /root, but GitHub sets HOME to /github/home.
+      - name: Build
+        run: HOME=/root scripts/build.sh
+
+      - name: Run unit tests
+        run: |
+          export HOME=/root
+          Xvfb "$DISPLAY" -screen 0 1280x1024x24 &
+          simulator > /dev/null 2>&1 &
+          sleep 5
+          scripts/test.sh
