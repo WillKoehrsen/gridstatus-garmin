@@ -32,6 +32,10 @@ jobs:
             echo "::error::'$DEVICE' isn't a supported device ID. Find yours in docs/devices.md."
             exit 1
           fi
+          if [ ! -d "/root/.Garmin/ConnectIQ/Devices/$DEVICE" ]; then
+            echo "::error::The build container doesn't have '$DEVICE' yet, because it's newer than the container's device files."
+            exit 1
+          fi
 
       - name: Create a temporary developer key
         run: |

@@ -33,6 +33,14 @@ jobs:
           sleep 5
           scripts/test.sh
 
-      # Catches a change that compiles for one watch but not another.
-      - name: Build the store package for every watch
-        run: HOME=/root scripts/package.sh
+      # Catches a change that compiles for one watch but not another. The container lags new watches, so those are skipped.
+      - name: Build the store package for every watch the container has
+        run: |
+          export HOME=/root
+          for device in $(grep -o '<iq:product id="[^"]*"/>' manifest.xml | cut -d'"' -f2); do
+            if [ ! -d "/root/.Garmin/ConnectIQ/Devices/$device" ]; then
+              echo "Skipping $device, which the container doesn't have"
+              sed -i "/<iq:product id=\"$device\"\/>/d" manifest.xml
+            fi
+          done
+          scripts/package.sh
