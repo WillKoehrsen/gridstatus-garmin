@@ -4,9 +4,11 @@ import Toybox.Lang;
 import Toybox.Time;
 import Toybox.WatchUi;
 
-// Page 0 is the overview of every ISO, and each later page is one ISO.
+// Page 0 is the overview of every ISO, page 1 is the price map, and each later page is one ISO.
 class ConditionsView extends WatchUi.View {
     private const OVERVIEW_PAGE_INDEX = 0;
+    private const MAP_PAGE_INDEX = 1;
+    private const FIRST_ISO_PAGE_INDEX = AppData.FIRST_ISO_PAGE_INDEX;
 
     private var _client as DatasetClient;
     private var _pageIndex as Number;
@@ -26,13 +28,13 @@ class ConditionsView extends WatchUi.View {
         movePage(-1);
     }
 
-    // The ISO row on screen, or null on the overview or before any data has loaded.
+    // The ISO row on screen, or null on the overview and map or before any data has loaded.
     function getSelectedRow() as Dictionary? {
         var rows = _client.getRows();
-        if (rows == null || _pageIndex == OVERVIEW_PAGE_INDEX || _pageIndex > rows.size()) {
+        if (rows == null || _pageIndex < FIRST_ISO_PAGE_INDEX || _pageIndex >= rows.size() + FIRST_ISO_PAGE_INDEX) {
             return null;
         }
-        return rows[_pageIndex - 1];
+        return rows[_pageIndex - FIRST_ISO_PAGE_INDEX];
     }
 
     function onHide() as Void {
@@ -44,7 +46,7 @@ class ConditionsView extends WatchUi.View {
         if (rows == null) {
             return;
         }
-        var pageCount = rows.size() + 1;
+        var pageCount = rows.size() + FIRST_ISO_PAGE_INDEX;
         _pageIndex = (_pageIndex + offset + pageCount) % pageCount;
         WatchUi.requestUpdate();
     }
@@ -57,12 +59,29 @@ class ConditionsView extends WatchUi.View {
             Screen.drawCentered(dc, 50, Graphics.FONT_SMALL, "Add your API key\nin Garmin Connect");
         } else if (rows == null) {
             Screen.drawCentered(dc, 50, Graphics.FONT_SMALL, Screen.statusMessage(_client));
-        } else if (_pageIndex == OVERVIEW_PAGE_INDEX || _pageIndex > rows.size()) {
+        } else if (_pageIndex == MAP_PAGE_INDEX) {
+            drawMap(dc, rows);
+        } else if (_pageIndex >= FIRST_ISO_PAGE_INDEX && _pageIndex < rows.size() + FIRST_ISO_PAGE_INDEX) {
+            drawIsoPage(dc, rows[_pageIndex - FIRST_ISO_PAGE_INDEX], _pageIndex - FIRST_ISO_PAGE_INDEX + 1, rows.size());
+        } else {
             _pageIndex = OVERVIEW_PAGE_INDEX;
             drawOverview(dc, rows);
-        } else {
-            drawIsoPage(dc, rows[_pageIndex - 1], rows.size());
         }
+    }
+
+    // The map fills the space between the title and the bottom line.
+    private function drawMap(dc as Dc, rows as Array<Dictionary>) as Void {
+        var titleY = dc.getHeight() * 13 / 100;
+        var footerY = dc.getHeight() * 89 / 100;
+        Screen.drawCentered(dc, 13, Graphics.FONT_SMALL, "PRICES");
+        PriceMap.draw(
+            dc,
+            rows,
+            titleY + dc.getFontHeight(Graphics.FONT_SMALL) / 2,
+            footerY - dc.getFontHeight(Graphics.FONT_XTINY) / 2
+        );
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        Screen.drawFooter(dc, footerY, footerText(""));
     }
 
     // A table sized from its widest values and the font's height, so its columns and rows don't collide on any screen.
@@ -122,7 +141,7 @@ class ConditionsView extends WatchUi.View {
         return widest;
     }
 
-    private function drawIsoPage(dc as Dc, row as Dictionary, isoCount as Number) as Void {
+    private function drawIsoPage(dc as Dc, row as Dictionary, isoNumber as Number, isoCount as Number) as Void {
         var now = Time.now();
         var load = Formatting.formatGigawatts(row["latest_load"] as Numeric?);
         var netLoad = Formatting.formatGigawatts(row["latest_net_load"] as Numeric?);
@@ -136,7 +155,7 @@ class ConditionsView extends WatchUi.View {
         Screen.drawCentered(dc, 55, Graphics.FONT_TINY, Formatting.withAge(price, row["lmp_time_utc"] as String?, now));
         Screen.drawCentered(dc, 65, Graphics.FONT_XTINY, location != null ? location : Formatting.NO_VALUE);
         Screen.drawCentered(dc, 76, Graphics.FONT_TINY, Formatting.withAge(fuel, row["primary_power_source_time_utc"] as String?, now));
-        Screen.drawFooter(dc, dc.getHeight() * 89 / 100, footerText(_pageIndex + "/" + isoCount + "  "));
+        Screen.drawFooter(dc, dc.getHeight() * 89 / 100, footerText(isoNumber + "/" + isoCount + "  "));
     }
 
     private function footerText(prefix as String) as String {

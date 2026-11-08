@@ -38,8 +38,8 @@ class ConditionsGlanceView extends WatchUi.GlanceView {
 
     private function selectRow(rows as Array<Dictionary>) as Dictionary {
         var pageIndex = Application.Storage.getValue(AppData.PAGE_INDEX_KEY);
-        var isValidIsoPage = pageIndex instanceof Number && pageIndex >= 1 && pageIndex <= rows.size();
-        return isValidIsoPage ? rows[(pageIndex as Number) - 1] : rows[0];
+        var isoIndex = pageIndex instanceof Number ? pageIndex - AppData.FIRST_ISO_PAGE_INDEX : -1;
+        return isoIndex >= 0 && isoIndex < rows.size() ? rows[isoIndex] : rows[0];
     }
 
     private function drawLine(dc as Dc, heightPercent as Number, text as String) as Void {

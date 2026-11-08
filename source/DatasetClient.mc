@@ -64,7 +64,7 @@ class DatasetClient {
         // The key goes in a header so it stays out of URLs, which servers and proxies often log.
         Communications.makeWebRequest(
             API_URL + _datasetId + "/query",
-            _parameters,
+            requestParameters(),
             {
                 :method => Communications.HTTP_REQUEST_METHOD_GET,
                 :headers => {"x-api-key" => getApiKey()},
@@ -77,14 +77,25 @@ class DatasetClient {
     function onResponse(responseCode as Number, data as Dictionary or String or Null) as Void {
         _isFetching = false;
         var rows = data instanceof Dictionary ? data["data"] : null;
-        if (responseCode == 200 && rows instanceof Array && rows.size() > 0) {
-            _rows = rows as Array<Dictionary>;
+        var keptRows = rows instanceof Array ? keepRows(rows as Array<Dictionary>) : [] as Array<Dictionary>;
+        if (responseCode == 200 && keptRows.size() > 0) {
+            _rows = keptRows;
             _fetchedAtSeconds = Time.now().value();
             saveToStorage();
         } else {
             _failureMessage = Formatting.describeFailure(responseCode);
         }
         WatchUi.requestUpdate();
+    }
+
+    // The parameters for the next request, which a subclass can work out at request time.
+    protected function requestParameters() as Dictionary<Object, Object>? {
+        return _parameters;
+    }
+
+    // The part of a response to keep, which a subclass can shrink before it is stored.
+    protected function keepRows(rows as Array<Dictionary>) as Array<Dictionary> {
+        return rows;
     }
 
     private function getApiKey() as String {

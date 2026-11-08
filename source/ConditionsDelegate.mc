@@ -27,10 +27,7 @@ class ConditionsDelegate extends WatchUi.BehaviorDelegate {
             _client.refreshIfStale();
             return true;
         }
-        var iso = row["iso"] as String;
-        var fuelMixClient = new DatasetClient(iso + AppData.FUEL_MIX_DATASET_SUFFIX, {"order" => "desc", "limit" => 1});
-        WatchUi.pushView(new FuelMixView(iso, fuelMixClient), new FuelMixDelegate(fuelMixClient), WatchUi.SLIDE_LEFT);
-        fuelMixClient.refreshIfStale();
+        new IsoDetailDelegate(row).show();
         return true;
     }
 }
