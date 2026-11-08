@@ -1,6 +1,6 @@
 # Supported watches
 
-Use the device ID when you build your own copy.
+Use the device ID when you build your own copy. The MARQ (Gen 3) can't be built on GitHub yet, because the build container's device files predate it.
 
 | Watch | Device ID |
 |---|---|
