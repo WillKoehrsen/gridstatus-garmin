@@ -143,19 +143,20 @@ module Formatting {
         return character == ' ' || character == '\t' || character == '\n' || character == '\r';
     }
 
+    // Short enough to fit the bottom line of the smallest supported screens.
     function describeFailure(responseCode as Number) as String {
         if (responseCode == Communications.BLE_CONNECTION_UNAVAILABLE) {
-            return "Phone not connected";
+            return "Phone offline";
         }
         // The API answers 400 for an invalid key and 401 for a missing one.
         if (responseCode == 400 || responseCode == 401 || responseCode == 403) {
-            return "API key rejected";
+            return "Bad API key";
         }
         if (responseCode == 429) {
             return "Limit reached";
         }
         if (responseCode == 200) {
-            return "No data returned";
+            return "No data";
         }
         return "Error " + responseCode;
     }

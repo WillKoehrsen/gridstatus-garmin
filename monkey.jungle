@@ -1,2 +1,10 @@
 project.manifest = manifest.xml
 base.resourcePath = resources;resources-keyless
+
+# High-resolution screens get a larger launcher icon; the compiler scales each icon to the watch's exact size.
+round-360x360.resourcePath = $(round-360x360.resourcePath);resources-launcher-large
+round-390x390.resourcePath = $(round-390x390.resourcePath);resources-launcher-large
+round-416x416.resourcePath = $(round-416x416.resourcePath);resources-launcher-large
+round-454x454.resourcePath = $(round-454x454.resourcePath);resources-launcher-large
+round-466x466.resourcePath = $(round-466x466.resourcePath);resources-launcher-large
+rectangle-448x486.resourcePath = $(rectangle-448x486.resourcePath);resources-launcher-large

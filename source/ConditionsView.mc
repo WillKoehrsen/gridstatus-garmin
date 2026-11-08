@@ -65,19 +65,61 @@ class ConditionsView extends WatchUi.View {
         }
     }
 
+    // A table sized from its widest values and the font's height, so its columns and rows don't collide on any screen.
     private function drawOverview(dc as Dc, rows as Array<Dictionary>) as Void {
-        var rowHeightPercent = 8;
         var font = Graphics.FONT_XTINY;
-        Screen.draw(dc, 62, 18, font, "GW", Graphics.TEXT_JUSTIFY_RIGHT);
-        Screen.draw(dc, 84, 18, font, "$/MWh", Graphics.TEXT_JUSTIFY_RIGHT);
+        var isoColumn = [] as Array<String>;
+        var loadColumn = ["GW"] as Array<String>;
+        var priceColumn = ["$/MWh"] as Array<String>;
         for (var index = 0; index < rows.size(); index++) {
-            var row = rows[index];
-            var heightPercent = 26 + index * rowHeightPercent;
-            Screen.draw(dc, 16, heightPercent, font, (row["iso"] as String).toUpper(), Graphics.TEXT_JUSTIFY_LEFT);
-            Screen.draw(dc, 62, heightPercent, font, Formatting.formatLoadNumber(row["latest_load"] as Numeric?), Graphics.TEXT_JUSTIFY_RIGHT);
-            Screen.draw(dc, 84, heightPercent, font, Formatting.formatWholePrice(row["latest_lmp"] as Numeric?), Graphics.TEXT_JUSTIFY_RIGHT);
+            isoColumn.add((rows[index]["iso"] as String).toUpper());
+            loadColumn.add(Formatting.formatLoadNumber(rows[index]["latest_load"] as Numeric?));
+            priceColumn.add(Formatting.formatWholePrice(rows[index]["latest_lmp"] as Numeric?));
         }
-        Screen.drawCentered(dc, 90, font, footerText(""));
+        var gap = dc.getWidth() * 5 / 100;
+        var isoWidth = widestText(dc, isoColumn, font);
+        var loadWidth = widestText(dc, loadColumn, font);
+        var tableWidth = isoWidth + gap + loadWidth + gap + widestText(dc, priceColumn, font);
+        var left = (dc.getWidth() - tableWidth) / 2;
+        var loadRight = left + isoWidth + gap + loadWidth;
+        var priceRight = left + tableWidth;
+
+        var rowStep = dc.getFontHeight(font) * 9 / 10;
+        var minimumRowStep = dc.getHeight() * 7 / 100;
+        if (rowStep < minimumRowStep) {
+            rowStep = minimumRowStep;
+        }
+        // The header, ISO rows and footer are evenly spaced and centered as one block.
+        var headerY = dc.getHeight() / 2 - rowStep * (rows.size() + 1) / 2;
+        // The header sits where a round screen is narrower, so the price unit moves in to fit and shortens if it would reach the load unit.
+        var headerRight = dc.getWidth() / 2 + Screen.availableHalfWidth(dc, headerY, dc.getFontHeight(font));
+        if (headerRight > priceRight) {
+            headerRight = priceRight;
+        }
+        var priceHeader = priceColumn[0];
+        if (headerRight - dc.getTextWidthInPixels(priceHeader, font) < loadRight + gap) {
+            priceHeader = "$";
+        }
+        Screen.drawAt(dc, loadRight, headerY, font, loadColumn[0], Graphics.TEXT_JUSTIFY_RIGHT);
+        Screen.drawAt(dc, headerRight, headerY, font, priceHeader, Graphics.TEXT_JUSTIFY_RIGHT);
+        for (var index = 0; index < rows.size(); index++) {
+            var y = headerY + (index + 1) * rowStep;
+            Screen.drawAt(dc, left, y, font, isoColumn[index], Graphics.TEXT_JUSTIFY_LEFT);
+            Screen.drawAt(dc, loadRight, y, font, loadColumn[index + 1], Graphics.TEXT_JUSTIFY_RIGHT);
+            Screen.drawAt(dc, priceRight, y, font, priceColumn[index + 1], Graphics.TEXT_JUSTIFY_RIGHT);
+        }
+        Screen.drawFooter(dc, headerY + (rows.size() + 1) * rowStep, footerText(""));
+    }
+
+    private function widestText(dc as Dc, texts as Array<String>, font as FontDefinition) as Number {
+        var widest = 0;
+        for (var index = 0; index < texts.size(); index++) {
+            var width = dc.getTextWidthInPixels(texts[index], font);
+            if (width > widest) {
+                widest = width;
+            }
+        }
+        return widest;
     }
 
     private function drawIsoPage(dc as Dc, row as Dictionary, isoCount as Number) as Void {
@@ -94,7 +136,7 @@ class ConditionsView extends WatchUi.View {
         Screen.drawCentered(dc, 55, Graphics.FONT_TINY, Formatting.withAge(price, row["lmp_time_utc"] as String?, now));
         Screen.drawCentered(dc, 65, Graphics.FONT_XTINY, location != null ? location : Formatting.NO_VALUE);
         Screen.drawCentered(dc, 76, Graphics.FONT_TINY, Formatting.withAge(fuel, row["primary_power_source_time_utc"] as String?, now));
-        Screen.drawCentered(dc, 89, Graphics.FONT_XTINY, footerText(_pageIndex + "/" + isoCount + "  "));
+        Screen.drawFooter(dc, dc.getHeight() * 89 / 100, footerText(_pageIndex + "/" + isoCount + "  "));
     }
 
     private function footerText(prefix as String) as String {

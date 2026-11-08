@@ -24,8 +24,16 @@ class ConditionsGlanceView extends WatchUi.GlanceView {
         var load = Formatting.formatGigawatts(row["latest_load"] as Numeric?);
         var fetchedAtSeconds = Application.Storage.getValue(AppData.fetchedAtKey(AppData.CONDITIONS_DATASET)) as Number?;
         var price = Formatting.formatPrice(row["latest_lmp"] as Numeric?);
+        var priceLine = price;
+        if (fetchedAtSeconds != null) {
+            priceLine = price + "  " + Formatting.formatElapsedSeconds(Time.now().value() - fetchedAtSeconds);
+        }
+        // Glance areas differ between watches, so the age is left off when the line wouldn't fit.
+        if (dc.getTextWidthInPixels(priceLine, Graphics.FONT_GLANCE) > dc.getWidth()) {
+            priceLine = price;
+        }
         drawLine(dc, 30, iso + "  " + load);
-        drawLine(dc, 72, fetchedAtSeconds != null ? price + "  " + Formatting.formatElapsedSeconds(Time.now().value() - fetchedAtSeconds) : price);
+        drawLine(dc, 72, priceLine);
     }
 
     private function selectRow(rows as Array<Dictionary>) as Dictionary {

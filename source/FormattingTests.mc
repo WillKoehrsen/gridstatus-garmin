@@ -144,12 +144,12 @@ function trimsWhitespace(logger as Logger) as Boolean {
 
 (:test)
 function describesFailures(logger as Logger) as Boolean {
-    Test.assertEqual(Formatting.describeFailure(Communications.BLE_CONNECTION_UNAVAILABLE), "Phone not connected");
-    Test.assertEqual(Formatting.describeFailure(400), "API key rejected");
-    Test.assertEqual(Formatting.describeFailure(401), "API key rejected");
-    Test.assertEqual(Formatting.describeFailure(403), "API key rejected");
+    Test.assertEqual(Formatting.describeFailure(Communications.BLE_CONNECTION_UNAVAILABLE), "Phone offline");
+    Test.assertEqual(Formatting.describeFailure(400), "Bad API key");
+    Test.assertEqual(Formatting.describeFailure(401), "Bad API key");
+    Test.assertEqual(Formatting.describeFailure(403), "Bad API key");
     Test.assertEqual(Formatting.describeFailure(429), "Limit reached");
-    Test.assertEqual(Formatting.describeFailure(200), "No data returned");
+    Test.assertEqual(Formatting.describeFailure(200), "No data");
     Test.assertEqual(Formatting.describeFailure(500), "Error 500");
     return true;
 }
