@@ -3,3 +3,5 @@ resources-local/
 *.der
 *.pem
 .env
+manifest-beta.xml
+beta.jungle

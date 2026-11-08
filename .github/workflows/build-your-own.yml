@@ -1,0 +1,59 @@
+name: Build your own copy
+
+# Builds the app with your API key inside, for copying to your watch by USB. See "Build your own copy" in the README.
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: Your watch's device ID from docs/devices.md, for example fr255m
+        required: true
+        default: fr255m
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Bundles the Connect IQ SDK and device files.
+    container: ghcr.io/matco/connectiq-tester:v2.10.0
+    env:
+      DEVICE: ${{ inputs.device }}
+    steps:
+      # Anyone signed in to GitHub can download files from a public repository's runs, and this file contains your key.
+      - name: Check the repository is private
+        if: ${{ !github.event.repository.private }}
+        run: |
+          echo "::error::Run this in a private copy of the repository, because the app file it makes contains your API key."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Check the device
+        run: |
+          if ! grep -qF "<iq:product id=\"$DEVICE\"/>" manifest.xml; then
+            echo "::error::'$DEVICE' isn't a supported device ID. Find yours in docs/devices.md."
+            exit 1
+          fi
+
+      - name: Create a temporary developer key
+        run: |
+          openssl genrsa -out /tmp/developer_key.pem 4096
+          openssl pkcs8 -topk8 -inform PEM -outform DER -in /tmp/developer_key.pem -out /tmp/developer_key.der -nocrypt
+
+      # The container's device files live under /root, but GitHub sets HOME to /github/home.
+      - name: Build
+        env:
+          GRIDSTATUS_API_KEY: ${{ secrets.GRIDSTATUS_API_KEY }}
+          GRIDSTATUS_DEVICE: ${{ inputs.device }}
+          CONNECTIQ_DEVELOPER_KEY: /tmp/developer_key.der
+        run: |
+          if [ -z "$GRIDSTATUS_API_KEY" ]; then
+            echo "::error::Add your API key as a repository secret named GRIDSTATUS_API_KEY first."
+            exit 1
+          fi
+          HOME=/root scripts/build_sideload.sh
+          mv bin/GridStatusSideload.prg bin/GridStatus.prg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GridStatus-${{ inputs.device }}
+          path: bin/GridStatus.prg
+          retention-days: 1
